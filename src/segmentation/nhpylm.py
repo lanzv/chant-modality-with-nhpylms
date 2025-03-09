@@ -79,7 +79,7 @@ def get_nhpylmclasses_segmentation(train_x, train_y, dev_x, dev_y, test_x, test_
                     beta_stops = 1.0, beta_passes = 1.0,
                     d_a = 1.0, d_b = 1.0, theta_alpha = 1.0, theta_beta = 1.0)
     # Train and Fit model
-    model.train(train_x, train_y, dev_x, dev_y, test_x, test_y, epochs, True, True, print_each_nth_iteration=10)
+    model.train(train_x, dev_x, train_y, dev_y, epochs, True, True, print_each_nth_iteration=10)
     logging.info("NHPYLMClasses model was successfully trained.")
     # Predictions
     train_segmentation, train_perplexity, train_mode_prediction = model.predict_segments_classes(train_x)
