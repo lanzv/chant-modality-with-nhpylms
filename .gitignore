@@ -4,3 +4,4 @@ scripts/
 outputs/
 data/cantuscorpus-v0.2/csv/*.csv
 data/
+src/*/__pycache__
