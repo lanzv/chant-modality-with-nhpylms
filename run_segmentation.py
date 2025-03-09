@@ -28,10 +28,10 @@ parser.add_argument('--seed', type=int, help='random seed', default=2)
 
 PREDICT_SEGMENTATION = {
     "nhpylm": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylm_segmentation(
-        train_x, dev_x, test_x, epochs=1
+        train_x, dev_x, test_x, epochs=200
     ),
     "nhpylmclasses": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylmclasses_segmentation(
-        train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=1
+        train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
     ),
     "words": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: segment_by_words(
         train_x, dev_x, test_x
