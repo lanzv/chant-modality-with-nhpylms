@@ -19,12 +19,12 @@ def get_full_melodies(melodies, ignore_liquescents=False):
     clean_volpianos = []
     for volpiano in melodies:
         mel = expand_accidentals(volpiano, omit_notes=True)
-        if ignore_liquescents:
-            chars = volpiano_characters('notes', 'flats', 'naturals') + '-'
-        else:
-            chars = volpiano_characters('liquescents', 'notes', 'flats', 'naturals') + '-'
+        chars = volpiano_characters('liquescents', 'notes', 'flats', 'naturals') + '-'
         mel = clean_volpiano(mel, allowed_chars=chars)
-        clean_volpianos.append(mel.replace('-', ''))
+        mel = mel.replace('-', '')
+        if ignore_liquescents:
+            mel = _replace_liquescents(mel)
+        clean_volpianos.append(mel)
     return clean_volpianos
 
 
@@ -106,13 +106,8 @@ def vbs2melodies(segmentations, ignore_liquescents=False):
     vbs_segmentations = []
     for segmentation in segmentations:
         contatenated_melody = ''.join(segmentation)
-        #mel = expand_accidentals(contatenated_melody, omit_notes=True)
         if ignore_liquescents:
-            chars = volpiano_characters('notes', 'flats', 'naturals') + '-'
-        else:
-            chars = volpiano_characters('liquescents', 'notes', 'flats', 'naturals') + '-'
-        mel = clean_volpiano(contatenated_melody, allowed_chars=chars)
-        mel = mel.replace('-', '')
+            mel = _replace_liquescents(contatenated_melody)
         new_segmentation = []
         l = 0
         for seg in segmentation:
@@ -185,3 +180,23 @@ def vbs2intervals(segmentations):
             l += len(seg)
         vbs_segmentations_intervals.append(new_segmentation)
     return vbs_segmentations_intervals
+
+
+
+def _replace_liquescents(melody):
+    """
+    Replace liquescents by their default note alternatives
+
+    Parameters
+    ----------
+    chant : str
+        string of chant notes, spaces for segmenations allowed
+    Returns
+    -------
+    basic_chant : str
+        string of chant notes without liquescents
+    """
+    basic_chant = melody.lower()
+    basic_chant = basic_chant.replace(")", "9")
+    basic_chant = basic_chant.replace("(", "8")
+    return basic_chant
