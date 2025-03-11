@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from src.preprocess.representation import get_full_melodies, get_intervals, get_merged_melodies, vbs2melodies, vbs2intervals, vbs2merged_melodies
 from src.segmentation.vbs import segment_by_words, segment_by_syllables, segment_by_neumes
 from src.segmentation.ngram import get_ngram_segmentation, get_overlap_ngrams, get_1_7overlap_ngrams
-from src.segmentation.nhpylm import get_nhpylm_segmentation, get_nhpylmclasses_segmentation
+from src.segmentation.nhpylm import get_nhpylm_segmentation, get_nhpylmclasses_segmentation, get_nhpylm_segmentation_joint, get_nhpylmclasses_segmentation_joint
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--segmentation_approach', type=str, default='nhpylm')
@@ -31,6 +31,12 @@ PREDICT_SEGMENTATION = {
         train_x, dev_x, test_x, epochs=200
     ),
     "nhpylmclasses": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylmclasses_segmentation(
+        train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
+    ),    
+    "nhpylm_joint": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylm_segmentation_joint(
+        train_x, dev_x, test_x, epochs=200
+    ),
+    "nhpylmclasses_joint": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylmclasses_segmentation_joint(
         train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
     ),
     "words": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: segment_by_words(

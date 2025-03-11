@@ -50,6 +50,36 @@ def get_nhpylm_segmentation(train_x, dev_x, test_x, epochs=200):
 
 
 
+def get_nhpylm_segmentation_joint(train_x, dev_x, test_x, epochs=200):
+    """
+    Segment melodies using nhpylm model, use all data for training
+    (train_x = train_x + dev_x + test_x)
+
+    Parameters
+    ----------
+    train_x: list of strings
+        list of training clean melody strings
+    dev_x: list of strings
+        list of dev clean melody strings
+    test_x: list of strings
+        list of test clean melody strings
+    epochs: int
+        number of nhpylm training iterations
+    Return
+    ------
+    train_segmentation: list of lists of strings
+        list of traing segmentations encoded as list of segments
+    dev_segmentation: list of lists of strings
+        list of dev segmentations encoded as list of segments
+    test_segmentation: list of lists of strings
+        list of test segmentations encoded as list of segments
+    """
+    train_x += dev_x
+    train_x += test_x
+    return get_nhpylm_segmentation(train_x, dev_x, test_x, epochs)
+
+
+
 def get_nhpylmclasses_segmentation(train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200):
     """
     Segment melodies using nhpylm classes model + predict modes
@@ -95,6 +125,37 @@ def get_nhpylmclasses_segmentation(train_x, train_y, dev_x, dev_y, test_x, test_
 
     return train_segmentation, dev_segmentation, test_segmentation
 
+
+
+def get_nhpylmclasses_segmentation_joint(train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200):
+    """
+    Segment melodies using nhpylm classes model + predict modes, use all data for training
+    (train_x = train_x + dev_x + test_x)
+
+    Parameters
+    ----------
+    train_x: list of strings
+        list of training clean melody strings
+    dev_x: list of strings
+        list of dev clean melody strings
+    test_x: list of strings
+        list of test clean melody strings
+    epochs: int
+        number of nhpylm training iterations
+    Return
+    ------
+    train_segmentation: list of lists of strings
+        list of traing segmentations encoded as list of segments
+    dev_segmentation: list of lists of strings
+        list of dev segmentations encoded as list of segments
+    test_segmentation: list of lists of strings
+        list of test segmentations encoded as list of segments
+    """
+    train_x += dev_x
+    train_x += test_x
+    train_y += dev_y
+    train_y += test_y
+    return get_nhpylmclasses_segmentation(train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=epochs)
 
 
 def _compute_accuracy(gold_modes, predicted_modes):
