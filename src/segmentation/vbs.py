@@ -23,6 +23,8 @@ def segment_by_words(train_x, dev_x, test_x):
         list of dev segmentations encoded as list of segments
     segmented_test: list of list of strings
         list of test segmentations encoded as list of segments
+    scores: None
+        the score is not supported here
     """
     segmented_train = []
     segmented_dev = []
@@ -32,7 +34,7 @@ def segment_by_words(train_x, dev_x, test_x):
             clean_volpiano = process_volpiano(volpiano)
             word_segmentation = segment_words(clean_volpiano)
             subset_segmentations.append(word_segmentation)
-    return segmented_train, segmented_dev, segmented_test
+    return segmented_train, segmented_dev, segmented_test, None
 
 
 def segment_by_syllables(train_x, dev_x, test_x):
@@ -55,6 +57,8 @@ def segment_by_syllables(train_x, dev_x, test_x):
         list of dev segmentations encoded as list of segments
     segmented_test: list of list of strings
         list of test segmentations encoded as list of segments
+    scores: None
+        the score is not supported here
     """
     segmented_train = []
     segmented_dev = []
@@ -64,7 +68,7 @@ def segment_by_syllables(train_x, dev_x, test_x):
             clean_volpiano = process_volpiano(volpiano)
             word_segmentation = segment_syllables(clean_volpiano)
             subset_segmentations.append(word_segmentation)
-    return segmented_train, segmented_dev, segmented_test
+    return segmented_train, segmented_dev, segmented_test, None
 
 
 def segment_by_neumes(train_x, dev_x, test_x):
@@ -87,6 +91,8 @@ def segment_by_neumes(train_x, dev_x, test_x):
         list of dev segmentations encoded as list of segments
     segmented_test: list of list of strings
         list of test segmentations encoded as list of segments
+    scores: None
+        the score is not supported here
     """
     segmented_train = []
     segmented_dev = []
@@ -96,4 +102,4 @@ def segment_by_neumes(train_x, dev_x, test_x):
             clean_volpiano = process_volpiano(volpiano)
             word_segmentation = segment_neumes(clean_volpiano)
             subset_segmentations.append(word_segmentation)
-    return segmented_train, segmented_dev, segmented_test
+    return segmented_train, segmented_dev, segmented_test, None

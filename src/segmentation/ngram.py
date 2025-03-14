@@ -25,6 +25,8 @@ def get_ngram_segmentation(train_x, dev_x, test_x, n):
         list of dev segmentations encoded as list of segments
     segmented_test: list of lists of strings
         list of test segmentations encoded as list of segments
+    scores: None
+        the score is not supported here
     """
     segmented_train = []
     segmented_dev = []
@@ -33,7 +35,7 @@ def get_ngram_segmentation(train_x, dev_x, test_x, n):
         for notes in subset:
             ngram_segmentation = segment_kmers(notes, k=n)
             subset_segmentations.append(ngram_segmentation)
-    return segmented_train, segmented_dev, segmented_test
+    return segmented_train, segmented_dev, segmented_test, None
 
 
 def get_overlap_ngrams(train_x, dev_x, test_x, n):
@@ -58,6 +60,8 @@ def get_overlap_ngrams(train_x, dev_x, test_x, n):
         list of dev ngram features
     test_features: list of lists of strings
         list of test ngram features
+    scores: None
+        the score is not supported here
     """
     train_features = []
     dev_features = []
@@ -66,7 +70,7 @@ def get_overlap_ngrams(train_x, dev_x, test_x, n):
         for notes in subset:
             ngram_features = _segment_kols(notes, k=n)
             subset_features.append(ngram_features)
-    return train_features, dev_features, test_features
+    return train_features, dev_features, test_features, None
 
 
 def get_1_7overlap_ngrams(train_x, dev_x, test_x):
@@ -91,6 +95,8 @@ def get_1_7overlap_ngrams(train_x, dev_x, test_x):
         list of dev ngram features
     test_features: list of lists of strings
         list of test ngram features
+    scores: None
+        the score is not supported here
     """
     train_features = []
     dev_features = []
@@ -101,7 +107,7 @@ def get_1_7overlap_ngrams(train_x, dev_x, test_x):
             for i in range(1, 8): #1, 2, 3, 4, 5, 6, 7
                 new_features += _segment_kols(notes, k=i)
             subset_features.append(new_features)
-    return train_features, dev_features, test_features
+    return train_features, dev_features, test_features, None
 
 
 def _segment_kols(string: str, k: int = 1) -> list:

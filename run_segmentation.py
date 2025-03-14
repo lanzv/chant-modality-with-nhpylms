@@ -135,7 +135,7 @@ def main(args):
  
 
     # segment
-    train_seg, dev_seg, test_seg = PREDICT_SEGMENTATION[args.segmentation_approach](
+    train_seg, dev_seg, test_seg, scores = PREDICT_SEGMENTATION[args.segmentation_approach](
         train_x, train_y, dev_x, dev_y, test_x, test_y
     )
 
@@ -156,6 +156,20 @@ def main(args):
         _store_segmentation_to_file(seg, filepath)
         filepath = os.path.join(args.output_dir, "modes#"+filename)
         _store_modes_to_file(modes, filepath)
+    
+    # store scores if there are any
+    if not scores == None:
+        other_args = ""
+        if args.separated_cantus_ids_split:
+            other_args += "sci"
+        if args.ignore_liquescents:
+            other_args += "liq"
+        filename = f"{args.segmentation_approach}#{args.representation}#{args.dataset_type}#{args.seed}#score#{other_args}.json"
+        filepath = os.path.join(args.output_dir, filename)
+
+        with open(filepath, 'w') as json_file:
+            json.dump(scores, json_file, indent=4)
+
 
 
 
