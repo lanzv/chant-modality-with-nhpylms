@@ -11,14 +11,14 @@ import numpy as np
 import json
 import glob
 from src.eval.classification_scores import svm_classification_score
-
+from src.eval.vocabulary_segments import compute_vocabulary_segment_length_counts, collect_vocabulay_segment_lengths
 
 
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--segmentation_approach', type=str, default='nhpylmclasses')
+parser.add_argument('--segmentation_approach', type=str, default='words')
 parser.add_argument('--representation', type=str, default='full_melodies')
 parser.add_argument('--dataset_type', type=str, default='dkaaug_antiphons')
 parser.add_argument('--segmentation_dir', type=str, default='./outputs/')
@@ -154,6 +154,7 @@ def _store_scores_to_json(scores, filepath):
     all_scores["final"]["accuracy_std"] = acc_std
     all_scores["final"]["perplexity"] = per_mean
     all_scores["final"]["perplexity_std"] = per_std
+    all_scores["final"]["vocabulary_segment_length_counts"] = collect_vocabulay_segment_lengths(scores)
 
 
     # Save scores
@@ -182,14 +183,18 @@ def main(args):
             # Evaluate segmentation using bacor score
             if args.segmentation_approach in ALREADY_ALL_DATA_IN_TRAIN:
                 scores[seed] = svm_classification_score(train_x, train_y, train_x, train_y)
+                scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
                 intermediate_scores = {}
             else:
                 scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
+                scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x,)
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, "train")
             scores[seed] |= intermediate_scores
         else:
             # Evaluate segmentation using bacor score
             scores[seed] = svm_classification_score(train_x, train_y, test_x, test_y)
+            # Compute Vocabulary segment length counts
+            scores[seed] |= compute_vocabulary_segment_length_counts(test_x)
             # Load intermediate scores if any
             intermediate_scores = _load_segmentation_intermediate_result(args, seed, "test")
             scores[seed] |= intermediate_scores
@@ -215,6 +220,8 @@ def main(args):
                 sc_scores[seed]["accuracy"] = scores[seed]["sc_accuracy"]
             if "perplexity" in scores[seed]:
                 sc_scores[seed]["perplexity"] = scores[seed]["perplexity"]
+            if "vocabulary_segment_length_counts" in scores[seed]:
+                sc_scores[seed]["vocabulary_segment_length_counts"] = scores[seed]["vocabulary_segment_length_counts"]
         filename = f"{args.segmentation_approach}_sc#{args.representation}#{args.dataset_type}#{other_args}.json"
         filepath = os.path.join(args.output_dir, filename)
         _store_scores_to_json(sc_scores, filepath)
