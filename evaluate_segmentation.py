@@ -187,7 +187,7 @@ def main(args):
                 intermediate_scores = {}
             else:
                 scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
-                scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x,)
+                scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, "train")
             scores[seed] |= intermediate_scores
         else:
