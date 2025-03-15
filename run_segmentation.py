@@ -13,6 +13,7 @@ from src.preprocess.representation import get_full_melodies, get_intervals, get_
 from src.segmentation.vbs import segment_by_words, segment_by_syllables, segment_by_neumes
 from src.segmentation.ngram import get_ngram_segmentation, get_overlap_ngrams, get_1_7overlap_ngrams
 from src.segmentation.nhpylm import get_nhpylm_segmentation, get_nhpylmclasses_segmentation, get_nhpylm_segmentation_joint, get_nhpylmclasses_segmentation_joint
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--segmentation_approach', type=str, default='nhpylm')
