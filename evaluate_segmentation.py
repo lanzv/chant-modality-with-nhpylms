@@ -25,13 +25,19 @@ parser.add_argument('--segmentation_dir', type=str, default='./outputs/')
 parser.add_argument('--output_dir', type=str, default='./classification_scores/')
 parser.add_argument('--separated_cantus_ids_split', type=bool, default=False)
 parser.add_argument('--ignore_liquescents', type=bool, default=False)
+parser.add_argument('--train_from_all_melodies', type=bool, default=False)
 parser.add_argument('--seed', type=int, help='random seed', default=0)
-
 
 
 SEGMENTATION_CLASSIFIERS = {
     "nhpylmclasses", "nhpylmclasses_joint"
 }
+
+
+ALREADY_ALL_DATA_IN_TRAIN = {
+    "nhpylm_joint", "nhpylmclasses_joint"
+}
+
 
 
 def _get_segmentation_paths_with_different_seeds(args):
@@ -97,7 +103,7 @@ def _load_segmentation(train_x_path, train_y_path, dev_x_path, dev_y_path, test_
     return train_segmentation, train_modes, test_segmentation, test_modes
 
 
-def _load_segmentation_intermediate_result(args, seed):
+def _load_segmentation_intermediate_result(args, seed, split="test"):
     other_args = ""
     if args.separated_cantus_ids_split:
         other_args += "sci"
@@ -113,8 +119,8 @@ def _load_segmentation_intermediate_result(args, seed):
     else:
         scores = {}
 
-    if "test" in scores:
-        scores = scores["test"]
+    if split in scores:
+        scores = scores[split]
     # Rename f1 and accuracy to segmentation classifier scores (sc)
     if "accuracy" in scores:
         scores["sc_accuracy"] = scores.pop("accuracy")
@@ -171,11 +177,22 @@ def main(args):
         assert len(test_x) == len(test_y)
         logging.info("train data: {} test data: {}".format(len(train_x), len(test_x)))
 
-        # Evaluate segmentation using bacor score
-        scores[seed] = svm_classification_score(train_x, train_y, test_x, test_y)
-        # Load intermediate scores if any
-        intermediate_scores = _load_segmentation_intermediate_result(args, seed)
-        scores[seed] |= intermediate_scores
+        if args.train_from_all_melodies:
+            # Include both, train and test, for training as well as for evaluation
+            # Evaluate segmentation using bacor score
+            if args.segmentation_approach in ALREADY_ALL_DATA_IN_TRAIN:
+                scores[seed] = svm_classification_score(train_x, train_y, train_x, train_y)
+                intermediate_scores = {}
+            else:
+                scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
+                intermediate_scores = _load_segmentation_intermediate_result(args, seed, "train")
+            scores[seed] |= intermediate_scores
+        else:
+            # Evaluate segmentation using bacor score
+            scores[seed] = svm_classification_score(train_x, train_y, test_x, test_y)
+            # Load intermediate scores if any
+            intermediate_scores = _load_segmentation_intermediate_result(args, seed, "test")
+            scores[seed] |= intermediate_scores
 
     # Store scores to json file
     other_args = ""
