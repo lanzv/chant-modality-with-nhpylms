@@ -60,7 +60,7 @@ def get_nhpylm_segmentation(train_x, dev_x, test_x, epochs=200):
 
 
 
-def get_nhpylm_segmentation_joint(train_x, dev_x, test_x, epochs=200):
+def get_nhpylm_segmentation_joint(train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200):
     """
     Segment melodies using nhpylm model, use all data for training
     (train_x = train_x + dev_x + test_x)
@@ -69,10 +69,16 @@ def get_nhpylm_segmentation_joint(train_x, dev_x, test_x, epochs=200):
     ----------
     train_x: list of strings
         list of training clean melody strings
+    train_y: list of strings
+        list of training modes
     dev_x: list of strings
         list of dev clean melody strings
+    dev_y: list of strings
+        list of training modes
     test_x: list of strings
         list of test clean melody strings
+    test_y: list of strings
+        list of training modes
     epochs: int
         number of nhpylm training iterations
     Return
@@ -88,6 +94,8 @@ def get_nhpylm_segmentation_joint(train_x, dev_x, test_x, epochs=200):
     """
     train_x += dev_x
     train_x += test_x
+    train_y += dev_y
+    train_y += test_y
     return get_nhpylm_segmentation(train_x, dev_x, test_x, epochs)
 
 
@@ -100,10 +108,16 @@ def get_nhpylmclasses_segmentation(train_x, train_y, dev_x, dev_y, test_x, test_
     ----------
     train_x: list of strings
         list of training clean melody strings
+    train_y: list of strings
+        list of training modes
     dev_x: list of strings
         list of dev clean melody strings
+    dev_y: list of strings
+        list of training modes
     test_x: list of strings
         list of test clean melody strings
+    test_y: list of strings
+        list of training modes
     epochs: int
         number of nhpylm training iterations
     Return
@@ -174,10 +188,16 @@ def get_nhpylmclasses_segmentation_joint(train_x, train_y, dev_x, dev_y, test_x,
     ----------
     train_x: list of strings
         list of training clean melody strings
+    train_y: list of strings
+        list of training modes
     dev_x: list of strings
         list of dev clean melody strings
+    dev_y: list of strings
+        list of training modes
     test_x: list of strings
         list of test clean melody strings
+    test_y: list of strings
+        list of training modes
     epochs: int
         number of nhpylm training iterations
     Return

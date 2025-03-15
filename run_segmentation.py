@@ -35,7 +35,7 @@ PREDICT_SEGMENTATION = {
         train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
     ),    
     "nhpylm_joint": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylm_segmentation_joint(
-        train_x, dev_x, test_x, epochs=200
+        train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
     ),
     "nhpylmclasses_joint": lambda train_x, train_y, dev_x, dev_y, test_x, test_y: get_nhpylmclasses_segmentation_joint(
         train_x, train_y, dev_x, dev_y, test_x, test_y, epochs=200
