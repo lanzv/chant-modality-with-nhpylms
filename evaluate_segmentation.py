@@ -12,7 +12,7 @@ import json
 import glob
 from src.eval.classification_scores import svm_classification_score
 from src.eval.vocabulary_segments import compute_vocabulary_segment_length_counts, collect_vocabulay_segment_lengths
-
+from src.eval.chants_segments import get_average_segment_lengths_of_position, collect_average_segment_lengths_of_position
 
 
 
@@ -155,6 +155,7 @@ def _store_scores_to_json(scores, filepath):
     all_scores["final"]["perplexity"] = per_mean
     all_scores["final"]["perplexity_std"] = per_std
     all_scores["final"]["vocabulary_segment_length_counts"] = collect_vocabulay_segment_lengths(scores)
+    all_scores["final"]["average_segment_lengths"] = collect_average_segment_lengths_of_position(scores)
 
 
     # Save scores
@@ -184,10 +185,12 @@ def main(args):
             if args.segmentation_approach in ALREADY_ALL_DATA_IN_TRAIN:
                 scores[seed] = svm_classification_score(train_x, train_y, train_x, train_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
+                scores[seed] |= get_average_segment_lengths_of_position(train_x)
                 intermediate_scores = {}
             else:
                 scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
+                scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x)
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, "train")
             scores[seed] |= intermediate_scores
         else:
@@ -195,6 +198,8 @@ def main(args):
             scores[seed] = svm_classification_score(train_x, train_y, test_x, test_y)
             # Compute Vocabulary segment length counts
             scores[seed] |= compute_vocabulary_segment_length_counts(test_x)
+            # Compute Average Segment Lengths of specific positions
+            scores[seed] |= get_average_segment_lengths_of_position(test_x)
             # Load intermediate scores if any
             intermediate_scores = _load_segmentation_intermediate_result(args, seed, "test")
             scores[seed] |= intermediate_scores
@@ -222,6 +227,8 @@ def main(args):
                 sc_scores[seed]["perplexity"] = scores[seed]["perplexity"]
             if "vocabulary_segment_length_counts" in scores[seed]:
                 sc_scores[seed]["vocabulary_segment_length_counts"] = scores[seed]["vocabulary_segment_length_counts"]
+            if "average_segment_lengths" in scores[seed]:
+                sc_scores[seed]["average_segment_lengths"] = scores[seed]["average_segment_lengths"]
         filename = f"{args.segmentation_approach}_sc#{args.representation}#{args.dataset_type}#{other_args}.json"
         filepath = os.path.join(args.output_dir, filename)
         _store_scores_to_json(sc_scores, filepath)
