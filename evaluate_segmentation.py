@@ -18,7 +18,7 @@ from src.eval.chants_segments import get_average_segment_lengths_of_position, co
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--segmentation_approach', type=str, default='words')
+parser.add_argument('--segmentation_approach', type=str, default='nhpylmclasses_joint')
 parser.add_argument('--representation', type=str, default='full_melodies')
 parser.add_argument('--dataset_type', type=str, default='dkaaug_antiphons')
 parser.add_argument('--segmentation_dir', type=str, default='./outputs/')
@@ -104,6 +104,7 @@ def _load_segmentation(train_x_path, train_y_path, dev_x_path, dev_y_path, test_
 
 
 def _load_segmentation_intermediate_result(args, seed, split="test"):
+    print(split)
     other_args = ""
     if args.separated_cantus_ids_split:
         other_args += "sci"
@@ -126,6 +127,7 @@ def _load_segmentation_intermediate_result(args, seed, split="test"):
         scores["sc_accuracy"] = scores.pop("accuracy")
     if "f1" in scores:
         scores["sc_f1"] = scores.pop("f1")
+    print(scores)
     return scores
 
 
@@ -186,12 +188,12 @@ def main(args):
                 scores[seed] = svm_classification_score(train_x, train_y, train_x, train_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x)
-                intermediate_scores = {}
+                intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="train")
             else:
                 scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x)
-                intermediate_scores = _load_segmentation_intermediate_result(args, seed, "train")
+                intermediate_scores = {}
             scores[seed] |= intermediate_scores
         else:
             # Evaluate segmentation using bacor score
@@ -201,7 +203,7 @@ def main(args):
             # Compute Average Segment Lengths of specific positions
             scores[seed] |= get_average_segment_lengths_of_position(test_x)
             # Load intermediate scores if any
-            intermediate_scores = _load_segmentation_intermediate_result(args, seed, "test")
+            intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="test")
             scores[seed] |= intermediate_scores
 
     # Store scores to json file
