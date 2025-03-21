@@ -2,6 +2,7 @@
 
 scripts/
 outputs/
+outputs_archive/
 classification_scores/
 classification_scores_train/
 data/cantuscorpus-v0.2/csv/*.csv

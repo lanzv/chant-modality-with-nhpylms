@@ -13,16 +13,17 @@ import glob
 from src.eval.classification_scores import svm_classification_score
 from src.eval.vocabulary_segments import compute_vocabulary_segment_length_counts, collect_vocabulay_segment_lengths
 from src.eval.chants_segments import get_average_segment_lengths_of_position, collect_average_segment_lengths_of_position
-
+from src.eval.classical_approach_scores import get_classical_approach_score
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--segmentation_approach', type=str, default='nhpylmclasses_joint')
+parser.add_argument('--segmentation_approach', type=str, default='words')
 parser.add_argument('--representation', type=str, default='full_melodies')
 parser.add_argument('--dataset_type', type=str, default='dkaaug_antiphons')
 parser.add_argument('--segmentation_dir', type=str, default='./outputs/')
 parser.add_argument('--output_dir', type=str, default='./classification_scores/')
+parser.add_argument('--score_type', type=str, default='svm_segmentation')
 parser.add_argument('--separated_cantus_ids_split', type=bool, default=False)
 parser.add_argument('--ignore_liquescents', type=bool, default=False)
 parser.add_argument('--train_from_all_melodies', type=bool, default=False)
@@ -39,6 +40,10 @@ ALREADY_ALL_DATA_IN_TRAIN = {
 }
 
 
+SCORE_EVALUATION = {
+    "svm_segmentation": lambda train_x, train_y, test_x, test_y: svm_classification_score(train_x, train_y, test_x, test_y),
+    "classical_approach": lambda train_x, train_y, test_x, test_y: get_classical_approach_score(train_x, train_y, test_x, test_y),
+}
 
 def _get_segmentation_paths_with_different_seeds(args):
     modes = {}
@@ -185,19 +190,19 @@ def main(args):
             # Include both, train and test, for training as well as for evaluation
             # Evaluate segmentation using bacor score
             if args.segmentation_approach in ALREADY_ALL_DATA_IN_TRAIN:
-                scores[seed] = svm_classification_score(train_x, train_y, train_x, train_y)
+                scores[seed] = SCORE_EVALUATION[args.score_type](train_x, train_y, train_x, train_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x)
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="train")
             else:
-                scores[seed] = svm_classification_score(train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
+                scores[seed] = SCORE_EVALUATION[args.score_type](train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x)
                 intermediate_scores = {}
             scores[seed] |= intermediate_scores
         else:
             # Evaluate segmentation using bacor score
-            scores[seed] = svm_classification_score(train_x, train_y, test_x, test_y)
+            scores[seed] = SCORE_EVALUATION[args.score_type](train_x, train_y, test_x, test_y)
             # Compute Vocabulary segment length counts
             scores[seed] |= compute_vocabulary_segment_length_counts(test_x)
             # Compute Average Segment Lengths of specific positions
@@ -212,7 +217,10 @@ def main(args):
         other_args += "sci"
     if args.ignore_liquescents:
         other_args += "liq"
-    filename = f"{args.segmentation_approach}#{args.representation}#{args.dataset_type}#{other_args}.json"
+    if args.score_type == "svm_segmentation": 
+        filename = f"{args.segmentation_approach}#{args.representation}#{args.dataset_type}#{other_args}.json"
+    else:
+        filename = f"{args.score_type}#{args.representation}#{args.dataset_type}#{other_args}.json"
     filepath = os.path.join(args.output_dir, filename)
     _store_scores_to_json(scores, filepath)
 
