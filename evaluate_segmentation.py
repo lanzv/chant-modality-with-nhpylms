@@ -12,13 +12,13 @@ import json
 import glob
 from src.eval.classification_scores import svm_classification_score
 from src.eval.vocabulary_segments import compute_vocabulary_segment_length_counts, collect_vocabulay_segment_lengths
-from src.eval.chants_segments import get_average_segment_lengths_of_position, collect_average_segment_lengths_of_position
+from src.eval.chants_segments import get_average_segment_lengths_of_position, get_unique_segment_densities, collect_chant_segment_statistics
 from src.eval.classical_approach_scores import get_classical_approach_score
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--segmentation_approach', type=str, default='words')
+parser.add_argument('--segmentation_approach', type=str, default='nhpylmclasses')
 parser.add_argument('--representation', type=str, default='full_melodies')
 parser.add_argument('--dataset_type', type=str, default='dkaaug_antiphons')
 parser.add_argument('--segmentation_dir', type=str, default='./outputs/')
@@ -162,7 +162,8 @@ def _store_scores_to_json(scores, filepath):
     all_scores["final"]["perplexity"] = per_mean
     all_scores["final"]["perplexity_std"] = per_std
     all_scores["final"]["vocabulary_segment_length_counts"] = collect_vocabulay_segment_lengths(scores)
-    all_scores["final"]["average_segment_lengths"] = collect_average_segment_lengths_of_position(scores)
+    all_scores["final"]["uniqueness_density"] = collect_chant_segment_statistics(scores, "uniqueness_density")
+    all_scores["final"]["average_segment_lengths"] = collect_chant_segment_statistics(scores, "average_segment_lengths")
 
 
     # Save scores
@@ -192,12 +193,14 @@ def main(args):
             if args.segmentation_approach in ALREADY_ALL_DATA_IN_TRAIN:
                 scores[seed] = SCORE_EVALUATION[args.score_type](train_x, train_y, train_x, train_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
-                scores[seed] |= get_average_segment_lengths_of_position(train_x)
+                scores[seed] |= get_average_segment_lengths_of_position(train_x, train_y)
+                scores[seed] |= get_unique_segment_densities(train_x, train_y)
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="train")
             else:
                 scores[seed] = SCORE_EVALUATION[args.score_type](train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
-                scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x)
+                scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x, train_y+test_y)
+                scores[seed] |= get_unique_segment_densities(train_x+test_x, train_y+test_y)
                 intermediate_scores = {}
             scores[seed] |= intermediate_scores
         else:
@@ -205,8 +208,9 @@ def main(args):
             scores[seed] = SCORE_EVALUATION[args.score_type](train_x, train_y, test_x, test_y)
             # Compute Vocabulary segment length counts
             scores[seed] |= compute_vocabulary_segment_length_counts(test_x)
-            # Compute Average Segment Lengths of specific positions
-            scores[seed] |= get_average_segment_lengths_of_position(test_x)
+            # Compute chant segment statistics
+            scores[seed] |= get_average_segment_lengths_of_position(test_x, test_y)
+            scores[seed] |= get_unique_segment_densities(test_x, test_y)
             # Load intermediate scores if any
             intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="test")
             scores[seed] |= intermediate_scores
@@ -239,6 +243,8 @@ def main(args):
                 sc_scores[seed]["vocabulary_segment_length_counts"] = scores[seed]["vocabulary_segment_length_counts"]
             if "average_segment_lengths" in scores[seed]:
                 sc_scores[seed]["average_segment_lengths"] = scores[seed]["average_segment_lengths"]
+            if "uniqueness_density" in scores[seed]:
+                sc_scores[seed]["uniqueness_density"] = scores[seed]["uniqueness_density"]
         filename = f"{args.segmentation_approach}_sc#{args.representation}#{args.dataset_type}#{other_args}.json"
         filepath = os.path.join(args.output_dir, filename)
         _store_scores_to_json(sc_scores, filepath)
