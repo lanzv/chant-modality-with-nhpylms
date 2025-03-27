@@ -41,7 +41,6 @@ def get_nhpylm_segmentation(train_x, dev_x, test_x, epochs=200):
     logging.info("NHPYLM model was successfully trained.")
     scores = {"train": {}, "dev": {}, "test": {}}
     # Predictions
-    scores
     train_segmentation, train_perplexity = model.predict_segments(train_x)
     scores["train"]["perplexity"] = train_perplexity
     logging.info("Train Perplexity: {}".format(train_perplexity))

@@ -8,5 +8,5 @@ classification_scores_train/
 data/cantuscorpus-v0.2/csv/*.csv
 data/
 src/*/__pycache__
-
+mode_predictions/
 *.ipynb

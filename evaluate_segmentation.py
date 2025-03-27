@@ -14,7 +14,7 @@ from src.eval.classification_scores import svm_classification_score
 from src.eval.vocabulary_segments import compute_vocabulary_segment_length_counts, collect_vocabulay_segment_lengths
 from src.eval.chants_segments import get_average_segment_lengths_of_position, get_unique_segment_densities, collect_chant_segment_statistics
 from src.eval.classical_approach_scores import get_classical_approach_score
-
+from src.eval.kni_perplexity import compute_kni_perplexity
 
 
 parser = argparse.ArgumentParser()
@@ -141,6 +141,7 @@ def _store_scores_to_json(scores, filepath):
     f1s = []
     accuracies = []
     perplexities = []
+    kni_perplexities = []
     for seed in scores:
         if "f1" in scores[seed]:
             f1s.append(scores[seed]["f1"])
@@ -148,6 +149,8 @@ def _store_scores_to_json(scores, filepath):
             accuracies.append(scores[seed]["accuracy"])
         if "perplexity" in scores[seed]:
             perplexities.append(scores[seed]["perplexity"])
+        if "kni_perplexity" in scores[seed]:
+            kni_perplexities.append(scores[seed]["kni_perplexity"])
     all_scores = {
         "all": scores,
         "final": {}
@@ -155,12 +158,15 @@ def _store_scores_to_json(scores, filepath):
     f1_mean, f1_std = np.mean(f1s), np.std(f1s, ddof=1)
     acc_mean, acc_std = np.mean(accuracies), np.std(accuracies, ddof=1)
     per_mean, per_std = np.mean(perplexities), np.std(perplexities, ddof=1)
+    kni_per_mean, kni_per_std = np.mean(kni_perplexities), np.std(kni_perplexities, ddof=1)
     all_scores["final"]["f1"] = f1_mean
     all_scores["final"]["f1_std"] = f1_std
     all_scores["final"]["accuracy"] = acc_mean
     all_scores["final"]["accuracy_std"] = acc_std
     all_scores["final"]["perplexity"] = per_mean
     all_scores["final"]["perplexity_std"] = per_std
+    all_scores["final"]["kni_perplexity"] = kni_per_mean
+    all_scores["final"]["kni_perplexity_std"] = kni_per_std
     all_scores["final"]["vocabulary_segment_length_counts"] = collect_vocabulay_segment_lengths(scores)
     all_scores["final"]["uniqueness_density"] = collect_chant_segment_statistics(scores, "uniqueness_density")
     all_scores["final"]["average_segment_lengths"] = collect_chant_segment_statistics(scores, "average_segment_lengths")
@@ -195,12 +201,15 @@ def main(args):
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x, train_y)
                 scores[seed] |= get_unique_segment_densities(train_x, train_y)
+                scores[seed] |= compute_kni_perplexity([' '.join(seg) for seg in train_x], [], [' '.join(seg) for seg in train_x])
                 intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="train")
             else:
                 scores[seed] = SCORE_EVALUATION[args.score_type](train_x+test_x, train_y+test_y, train_x+test_x, train_y+test_y)
                 scores[seed] |= compute_vocabulary_segment_length_counts(train_x+test_x)
                 scores[seed] |= get_average_segment_lengths_of_position(train_x+test_x, train_y+test_y)
                 scores[seed] |= get_unique_segment_densities(train_x+test_x, train_y+test_y)
+                scores[seed] |= compute_kni_perplexity([' '.join(seg) for seg in train_x+test_x], [], [' '.join(seg) for seg in train_x+test_x])
+
                 intermediate_scores = {}
             scores[seed] |= intermediate_scores
         else:
@@ -211,9 +220,11 @@ def main(args):
             # Compute chant segment statistics
             scores[seed] |= get_average_segment_lengths_of_position(test_x, test_y)
             scores[seed] |= get_unique_segment_densities(test_x, test_y)
+            scores[seed] |= compute_kni_perplexity([' '.join(seg) for seg in train_x[:int(0.9*len(train_x))]], [' '.join(seg) for seg in train_x[int(0.9*len(train_x)):]], [' '.join(seg) for seg in test_x])
             # Load intermediate scores if any
             intermediate_scores = _load_segmentation_intermediate_result(args, seed, split="test")
             scores[seed] |= intermediate_scores
+            
 
     # Store scores to json file
     other_args = ""
@@ -245,6 +256,8 @@ def main(args):
                 sc_scores[seed]["average_segment_lengths"] = scores[seed]["average_segment_lengths"]
             if "uniqueness_density" in scores[seed]:
                 sc_scores[seed]["uniqueness_density"] = scores[seed]["uniqueness_density"]
+            if "kni_perplexity" in scores[seed]:
+                sc_scores[seed]["kni_perplexity"] = scores[seed]["kni_perplexity"]
         filename = f"{args.segmentation_approach}_sc#{args.representation}#{args.dataset_type}#{other_args}.json"
         filepath = os.path.join(args.output_dir, filename)
         _store_scores_to_json(sc_scores, filepath)
