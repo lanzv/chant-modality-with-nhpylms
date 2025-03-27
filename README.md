@@ -1,6 +1,6 @@
 # Chant Modality with NHPYLM
 
-This repository provides the source code for the paper **Gregorian Modality, Memory, and Bayesian Nonparametrics***. It explores an information-theoretic approach to segmenting Gregorian chant melodies using the Nested Hierarchical Pitman-Yor Language Model (NHPYLM). This approach is inspired by the memorization process of Gregorian chant and utilizes Bayesian methods to uncover optimal segmentations that can improve modality classification.
+This repository provides the source code for the paper **Gregorian Modality, Memory, and Bayesian Nonparametrics**. It explores an information-theoretic approach to segmenting Gregorian chant melodies using the Nested Hierarchical Pitman-Yor Language Model (NHPYLM). This approach is inspired by the memorization process of Gregorian chant and utilizes Bayesian methods to uncover optimal segmentations that can improve modality classification.
 
 
 ## NHPYLM Generates New Best Segmentation!
@@ -63,7 +63,7 @@ Representations
 You can choose to keep or ignore liquescents and configure the dataset to ensure test melodies are free from similar melodies based on cantus IDs, allowing for robust evaluation.
 
 
-The baselines, Cantus Corpus loaders, and representation encoders are adapted from the following repository: [ISMIR2020](https://github.com/bacor/ISMIR2020).
+The baselines, Cantus Corpus loaders, and representation encoders are adapted from the following repository: https://github.com/bacor/ISMIR2020.
 
 
 ## How to run all experiments
@@ -142,5 +142,5 @@ The best segmentations of D-KA Aug. melodies in pitch representation (keeping li
 ## How to cite
 
 ```
-TODO citation
+Anonymized for Submission
 ``` 
