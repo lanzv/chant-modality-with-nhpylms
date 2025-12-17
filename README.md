@@ -142,5 +142,21 @@ The best segmentations of D-KA Aug. melodies in pitch representation (keeping li
 ## How to cite
 
 ```
-Anonymized for Submission
+@inproceedings{vojtech_lanz_2025_17811449,
+  author       = {Vojtěch Lanz and
+                  Jan Hajič, jr.},
+  title        = {Gregorian melody, modality, and memory: Segmenting
+                   chant with Bayesian nonparametrics
+                  },
+  booktitle    = {Proceedings of the 26th International Society for
+                   Music Information Retrieval Conference
+                  },
+  year         = 2025,
+  pages        = {652-660},
+  publisher    = {ISMIR},
+  month        = sep,
+  venue        = {Daejeon, South Korea and Online},
+  doi          = {10.5281/zenodo.17811449},
+  url          = {https://doi.org/10.5281/zenodo.17811449},
+}
 ``` 
